@@ -1,7 +1,7 @@
 # DOS-Server-GCP-Wrapper
 Uploads data from a public [GCP Bucket](https://console.cloud.google.com/storage/browser/genomics-public-data/1000-genomes/bam/?_ga=2.252890444.-472133816.1533309090&_gac=1.81252837.1533310626.Cj0KCQjw-o_bBRCOARIsAM5NbIN8kuD7tf7SIZHrCioTk1HgIWCMdntRn5ibl7CTVZqKpFlGDK6O630aAg_FEALw_wcB) into a DOS Server.
 
-## Run
+## Usage
 
 First have a dos server running on `localhost:8080`. My implementation can be found [here](https://github.com/ekeilty17/GA4GH-DOS-Server).
 
