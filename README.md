@@ -3,7 +3,7 @@ Uploads data from a public [GCP Bucket](https://console.cloud.google.com/storage
 
 ## Usage
 
-First have a dos server running on `localhost:8080`. My implementation can be found [here](https://github.com/ekeilty17/GA4GH-DOS-Server).
+First have a dos server running on `localhost:8080`. My implementation can be found [here](https://github.com/ekeilty17/GA4GH-DOS-Server). **Note:** Make sure the KeyCloak security is turned off.
 
 Make sure you are usig Java 1.8
 ```
