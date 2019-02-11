@@ -26,7 +26,6 @@ public class Ga4ghDataObject {
 
     public Ga4ghDataObject(String id, String name, String size, String created, String updated, String version,
                            String mimeType, List<Checksum> checksums, List<DosUrl> urls, String description, List<String> aliases) {
-        super();
         this.id = id;
         this.name = name;
         this.size = size;
@@ -41,7 +40,6 @@ public class Ga4ghDataObject {
     }
 
     public Ga4ghDataObject(JSONObject data) {
-        super();
         this.id = data.getString("id");
         this.name = data.getString("name");
         this.size = data.getString("size");
@@ -49,14 +47,14 @@ public class Ga4ghDataObject {
         this.updated = data.getString("updated");
         this.version = "1.0.0";
         this.mimeType = null;
-        this.checksums = new ArrayList<Checksum>();
+        this.checksums = new ArrayList<>();
 
-        Map<String, String> system_metadata = new HashMap<String, String>();
-        Map<String, String> user_metadata = new HashMap<String, String>();
-        this.urls = new ArrayList<DosUrl>(Arrays.asList(new DosUrl(data.getString("selfLink"), system_metadata, user_metadata)));
+        Map<String, String> system_metadata = new HashMap<>();
+        Map<String, String> user_metadata = new HashMap<>();
+        this.urls = new ArrayList<>(Arrays.asList(new DosUrl(data.getString("selfLink"), system_metadata, user_metadata)));
 
         this.description = null;
-        this.aliases = new ArrayList<String>();
+        this.aliases = new ArrayList<>();
     }
 
 }

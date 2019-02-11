@@ -3,23 +3,21 @@ Uploads data from a public [GCP Bucket](https://console.cloud.google.com/storage
 
 ## Usage
 
-First have a dos server running on http://localhost:8080/. My implementation can be found [here](https://github.com/ekeilty17/GA4GH-DOS-Server). **Note:** Make sure the KeyCloak security is turned off.
+First have a dos server running on http://localhost:8080/. These instructions are tested against the
+[DNAstack DOS server](https://github.com/DNAstack/GA4GH-DOS-Server) created under Google Summer of Code.
 
-Make sure you are usig Java 1.8
+Run the GCS data loader:
 ```
-javac -version
-```
-
-Use the Maven plugin
-```
-
-mvn clean spring-boot:run
-
+DOS_SERVER_URL=http://localhost:8080 \
+DOS_SERVER_USERNAME=dosadmin \
+DOS_SERVER_PASSWORD=dosadmin \
+mvn exec:java
 ```
 
+By default, this imports the GCS public data objects from the 1000 Genomes project.
 To see if it worked, execute:
 ```
 $ curl http://localhost:8080/dataobjects
 $ curl http://localhost:8080/databundles
 ```
-This should display the objects that have been added to the database
+This should display the objects that have been added to the database.
