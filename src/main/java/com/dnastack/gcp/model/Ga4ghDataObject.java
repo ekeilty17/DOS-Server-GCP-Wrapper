@@ -51,7 +51,11 @@ public class Ga4ghDataObject {
 
         Map<String, String> system_metadata = new HashMap<>();
         Map<String, String> user_metadata = new HashMap<>();
-        this.urls = new ArrayList<>(Arrays.asList(new DosUrl(data.getString("selfLink"), system_metadata, user_metadata)));
+        String dataUrl = data.getString("selfLink");
+        if (dataUrl != null) {
+            dataUrl += "?alt=media";
+        }
+        this.urls = new ArrayList<>(Arrays.asList(new DosUrl(dataUrl, system_metadata, user_metadata)));
 
         this.description = null;
         this.aliases = new ArrayList<>();
