@@ -60,6 +60,8 @@ public class GcpClient {
         String originalMimeType = blob.getContentType();
         if ("text/x-vcard".equals(originalMimeType)) {
             return "application/x-ga4gh-vcf";
+        } else if ("text/vcard".equals(originalMimeType)) {
+            return "application/x-ga4gh-vcf";
         } else {
             return originalMimeType;
         }
