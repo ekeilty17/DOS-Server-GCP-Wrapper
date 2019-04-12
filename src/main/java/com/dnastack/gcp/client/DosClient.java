@@ -27,8 +27,10 @@ public class DosClient {
     private final HttpClient httpClient;
 
     private final Gson gson = new Gson();
+    private long objectId;
 
-    public DosClient(URI baseUrl, String username, String password) throws IOException {
+    public DosClient(URI baseUrl, String username, String password, long objectIdStartValue)
+            throws IOException {
         this.baseUrl = requireNonNull(baseUrl);
 
         String auth = username + ":" + password;
@@ -36,10 +38,15 @@ public class DosClient {
         authHeader = "Basic " + new String(encodedAuth, StandardCharsets.ISO_8859_1);
 
         httpClient = HttpClientBuilder.create().build();
+        this.objectId = objectIdStartValue;
     }
 
     public void postDataObject(Ga4ghDataObject dataObject) {
         try {
+            if (dataObject.getId() == null) {
+                dataObject.setId(Long.toString(objectId));
+                objectId++;
+            }
             String postBody = gson.toJson(singletonMap("data_object", dataObject));
 
             HttpPost request = new HttpPost(baseUrl.resolve("dataobjects"));
@@ -50,9 +57,15 @@ public class DosClient {
             HttpResponse httpResponse = httpClient.execute(request);
             String responseBody = EntityUtils.toString(httpResponse.getEntity());
             if (httpResponse.getStatusLine().getStatusCode() != 200) {
-                throw new IOException("Post data object to " + request.getURI() + " failed: " + httpResponse.getStatusLine() + "\n" +
-                        Arrays.toString(httpResponse.getAllHeaders()) + "\n" +
-                        responseBody);
+                throw new IOException(
+                        "Post data object to "
+                                + request.getURI()
+                                + " failed: "
+                                + httpResponse.getStatusLine()
+                                + "\n"
+                                + Arrays.toString(httpResponse.getAllHeaders())
+                                + "\n"
+                                + responseBody);
             }
             System.out.println("Posted to DOS server: " + postBody);
 
