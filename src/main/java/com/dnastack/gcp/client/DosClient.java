@@ -6,7 +6,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -17,7 +17,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
 
 public class DosClient {
@@ -47,18 +46,20 @@ public class DosClient {
                 dataObject.setId(Long.toString(objectId));
                 objectId++;
             }
-            String postBody = gson.toJson(singletonMap("data_object", dataObject));
+            String postBody = gson.toJson(dataObject);
 
-            HttpPost request = new HttpPost(baseUrl.resolve("dataobjects"));
+            HttpPut request =
+                    new HttpPut(baseUrl.resolve("ga4gh/drs/v1/objects/" + dataObject.getId()));
             request.setEntity(new StringEntity(postBody));
             request.setHeader("Content-type", "application/json");
             request.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
 
             HttpResponse httpResponse = httpClient.execute(request);
             String responseBody = EntityUtils.toString(httpResponse.getEntity());
-            if (httpResponse.getStatusLine().getStatusCode() != 200) {
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            if (statusCode != 200 && statusCode != 201) {
                 throw new IOException(
-                        "Post data object to "
+                        "PUT object to "
                                 + request.getURI()
                                 + " failed: "
                                 + httpResponse.getStatusLine()

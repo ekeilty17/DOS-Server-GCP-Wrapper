@@ -41,7 +41,7 @@ public class GcpClient {
     }
 
     private String convertDate(Long dateValue) {
-        return new DateTime(dateValue).toString();
+        return new DateTime(false, dateValue, 0).toStringRfc3339();
     }
 
     private List<Checksum> getChecksums(Blob blob) {
