@@ -42,6 +42,8 @@ public class GCPWrapper {
                 })
                 .forEach(dosClient::postDataObject);
 
+        dosClient.flush();
+
         System.out.println("Done.");
     }
 

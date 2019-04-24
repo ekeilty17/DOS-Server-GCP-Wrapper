@@ -6,7 +6,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,6 +28,8 @@ public class DosClient {
     private final HttpClient httpClient;
 
     private final Gson gson = new Gson();
+
+    private List<Ga4ghDataObject> bufferedDataObjects = new ArrayList<>();
 
     public DosClient(URI baseUrl, String username, String password) {
         this.baseUrl = requireNonNull(baseUrl);
@@ -38,11 +42,18 @@ public class DosClient {
     }
 
     public void postDataObject(Ga4ghDataObject dataObject) {
-        try {
-            String postBody = gson.toJson(dataObject);
+        bufferedDataObjects.add(dataObject);
+        if (bufferedDataObjects.size() >= 100) {
+            flush();
+        }
+    }
 
-            HttpPut request =
-                    new HttpPut(baseUrl.resolve("ga4gh/drs/v1/objects/" + dataObject.getId()));
+    public void flush() {
+        try {
+            String postBody = gson.toJson(bufferedDataObjects);
+
+            HttpPost request =
+                    new HttpPost(baseUrl.resolve("ga4gh/drs/v1/objects"));
             request.setEntity(new StringEntity(postBody));
             request.setHeader("Content-type", "application/json");
             request.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
@@ -52,7 +63,7 @@ public class DosClient {
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (statusCode != 200 && statusCode != 201) {
                 throw new IOException(
-                        "PUT object to "
+                        "POST object to "
                                 + request.getURI()
                                 + " failed: "
                                 + httpResponse.getStatusLine()
@@ -61,8 +72,9 @@ public class DosClient {
                                 + "\n"
                                 + responseBody);
             }
-            System.out.println("Posted to DOS server: " + postBody);
+            System.out.println("Posted " + bufferedDataObjects.size() + " objects to DRS server");
 
+            bufferedDataObjects.clear();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
