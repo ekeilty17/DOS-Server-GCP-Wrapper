@@ -26,10 +26,8 @@ public class DosClient {
     private final HttpClient httpClient;
 
     private final Gson gson = new Gson();
-    private long objectId;
 
-    public DosClient(URI baseUrl, String username, String password, long objectIdStartValue)
-            throws IOException {
+    public DosClient(URI baseUrl, String username, String password) {
         this.baseUrl = requireNonNull(baseUrl);
 
         String auth = username + ":" + password;
@@ -37,15 +35,10 @@ public class DosClient {
         authHeader = "Basic " + new String(encodedAuth, StandardCharsets.ISO_8859_1);
 
         httpClient = HttpClientBuilder.create().build();
-        this.objectId = objectIdStartValue;
     }
 
     public void postDataObject(Ga4ghDataObject dataObject) {
         try {
-            if (dataObject.getId() == null) {
-                dataObject.setId(Long.toString(objectId));
-                objectId++;
-            }
             String postBody = gson.toJson(dataObject);
 
             HttpPut request =

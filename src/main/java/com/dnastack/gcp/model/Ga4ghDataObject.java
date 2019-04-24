@@ -1,11 +1,16 @@
 package com.dnastack.gcp.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 import org.json.JSONObject;
 
 import java.util.*;
 
-@Data
+@Value
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Ga4ghDataObject {
 
     private String id;
@@ -19,46 +24,4 @@ public class Ga4ghDataObject {
     private List<DosUrl> urls;
     private String description;
     private List<String> aliases;
-
-    public Ga4ghDataObject() {
-
-    }
-
-    public Ga4ghDataObject(String id, String name, String size, String created, String updated, String version,
-                           String mimeType, List<Checksum> checksums, List<DosUrl> urls, String description, List<String> aliases) {
-        this.id = id;
-        this.name = name;
-        this.size = size;
-        this.created = created;
-        this.updated = updated;
-        this.version = version;
-        this.mimeType = mimeType;
-        this.checksums = checksums;
-        this.urls = urls;
-        this.description = description;
-        this.aliases = aliases;
-    }
-
-    public Ga4ghDataObject(JSONObject data) {
-        this.id = data.getString("id");
-        this.name = data.getString("name");
-        this.size = data.getString("size");
-        this.created = data.getString("timeCreated");
-        this.updated = data.getString("updated");
-        this.version = "1.0.0";
-        this.mimeType = null;
-        this.checksums = new ArrayList<>();
-
-        Map<String, String> system_metadata = new HashMap<>();
-        Map<String, String> user_metadata = new HashMap<>();
-        String dataUrl = data.getString("selfLink");
-        if (dataUrl != null) {
-            dataUrl += "?alt=media";
-        }
-        this.urls = new ArrayList<>(Arrays.asList(new DosUrl(dataUrl, system_metadata, user_metadata)));
-
-        this.description = null;
-        this.aliases = new ArrayList<>();
-    }
-
 }

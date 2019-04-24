@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import com.dnastack.gcp.model.Checksum;
 import com.dnastack.gcp.model.Checksum.Type;
@@ -12,6 +13,9 @@ import com.dnastack.gcp.model.DosUrl;
 import com.dnastack.gcp.model.Ga4ghDataObject;
 import com.google.api.client.util.DateTime;
 import com.google.api.gax.paging.Page;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.UserCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
@@ -19,25 +23,31 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 
-public class GcpClient {
+public class GcsClient {
 
     @Getter private String bucketName;
     private Storage storage;
+    private String billingProjectId;
 
-    public GcpClient(String bucketName) {
+    public GcsClient(String bucketName, StorageOptions storageOptions, String billingProjectId) {
         this.bucketName = requireNonNull(bucketName);
-        this.storage = StorageOptions.getDefaultInstance().getService();
+        this.storage = storageOptions.getService();
+        this.billingProjectId = billingProjectId;
     }
 
-    public List<Ga4ghDataObject> getDataObjects(String prefix) throws IOException {
-        Page<Blob> blobPage =
-                prefix == null
-                        ? storage.list(bucketName)
-                        : storage.list(bucketName, BlobListOption.prefix(prefix));
+    public Stream<Ga4ghDataObject> getDataObjects(String prefix) throws IOException {
+        List<BlobListOption> blobListOptions = new ArrayList<>();
+        if (prefix != null) {
+            blobListOptions.add(BlobListOption.prefix(prefix));
+        }
+        if (billingProjectId != null) {
+            blobListOptions.add(BlobListOption.userProject(billingProjectId));
+        }
+
+        Page<Blob> blobPage = storage.list(bucketName, blobListOptions.toArray(new BlobListOption[0]));
 
         return StreamSupport.stream(blobPage.iterateAll().spliterator(), false)
-                .map(blob -> toGa4ghObject(prefix, blob))
-                .collect(Collectors.toList());
+                .map(blob -> toGa4ghObject(prefix, blob));
     }
 
     private String convertDate(Long dateValue) {

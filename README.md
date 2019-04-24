@@ -3,12 +3,12 @@ Uploads information about files in a public [GCP Bucket](https://console.cloud.g
 
 ## Usage
 
-First have a dos server running on http://localhost:8101/. These instructions are tested against the
+First have a dos server running on http://localhost:8086/. These instructions are tested against the
 [DNAstack DOS server](https://github.com/DNAstack/GA4GH-DOS-Server) created under Google Summer of Code.
 
 Run the GCS data loader:
 ```
-DOS_SERVER_URL=http://localhost:8101 \
+DOS_SERVER_URL=http://localhost:8086 \
 DOS_SERVER_USERNAME=dosadmin \
 DOS_SERVER_PASSWORD=dosadmin \
 mvn exec:java
@@ -17,7 +17,36 @@ mvn exec:java
 By default, this imports the GCS public data objects from the 1000 Genomes project.
 To see if it worked, execute:
 ```
-$ curl http://localhost:8101/dataobjects
-$ curl http://localhost:8101/databundles
+$ curl http://localhost:8086/dataobjects
+$ curl http://localhost:8086/databundles
 ```
 This should display the objects that have been added to the database.
+
+### Example: Load 1000 Genomes Data
+```
+DOS_SERVER_URL=http://localhost:8086 \
+DOS_SERVER_USERNAME=dosadmin \
+DOS_SERVER_PASSWORD=dosadmin \
+mvn exec:java -Dexec.args='genomics-public-data 1000-genomes/bam'
+
+DOS_SERVER_URL=http://localhost:8086 \
+DOS_SERVER_USERNAME=dosadmin \
+DOS_SERVER_PASSWORD=dosadmin \
+mvn exec:java -Dexec.args='genomics-public-data 1000-genomes/vcf'
+```
+
+### Example: Load Reprocessed PGP Canada Data
+```
+DOS_SERVER_URL=http://localhost:8086 \
+DOS_SERVER_USERNAME=dosadmin \
+DOS_SERVER_PASSWORD=dosadmin \
+mvn exec:java -Dexec.args='pgc-data'
+```
+
+### Example: Load MSSNG Data
+```
+DOS_SERVER_URL=http://localhost:8086 \
+DOS_SERVER_USERNAME=dosadmin \
+DOS_SERVER_PASSWORD=dosadmin \
+mvn exec:java -Dexec.args='mssng-share released/genomes/ILMN/VCF'
+```
