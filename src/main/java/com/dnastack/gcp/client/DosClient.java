@@ -1,7 +1,8 @@
 package com.dnastack.gcp.client;
 
-import com.dnastack.gcp.model.Ga4ghDataObject;
-import com.google.gson.Gson;
+import com.dnastack.gcp.model.DrsObject;
+import com.google.api.client.util.DateTime;
+import com.google.gson.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -13,8 +14,12 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +32,9 @@ public class DosClient {
     private final String authHeader;
     private final HttpClient httpClient;
 
-    private final Gson gson = new Gson();
+    private final Gson gson;
 
-    private List<Ga4ghDataObject> bufferedDataObjects = new ArrayList<>();
+    private List<DrsObject> bufferedDataObjects = new ArrayList<>();
 
     public DosClient(URI baseUrl, String username, String password) {
         this.baseUrl = requireNonNull(baseUrl);
@@ -39,9 +44,18 @@ public class DosClient {
         authHeader = "Basic " + new String(encodedAuth, StandardCharsets.ISO_8859_1);
 
         httpClient = HttpClientBuilder.create().build();
+
+
+        this.gson = new GsonBuilder().registerTypeAdapter(Instant.class, new JsonSerializer<Instant>() {
+            @Override
+            public JsonElement serialize(Instant instant, Type type, JsonSerializationContext jsonSerializationContext) {
+                String t = new DateTime(false, instant.getEpochSecond(),0).toStringRfc3339();
+                return jsonSerializationContext.serialize(t);
+            }
+        }).create();
     }
 
-    public void postDataObject(Ga4ghDataObject dataObject) {
+    public void postDataObject(DrsObject dataObject) {
         bufferedDataObjects.add(dataObject);
         if (bufferedDataObjects.size() >= 100) {
             flush();
@@ -51,7 +65,6 @@ public class DosClient {
     public void flush() {
         try {
             String postBody = gson.toJson(bufferedDataObjects);
-
             HttpPost request =
                     new HttpPost(baseUrl.resolve("ga4gh/drs/v1/objects"));
             request.setEntity(new StringEntity(postBody));

@@ -1,18 +1,17 @@
 package com.dnastack.gcp.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class DosUrl {
-
+@NoArgsConstructor
+@Builder
+public class DrsAccessUrl {
+    private List<String> headers;
     private String url;
-    private Map<String, String> system_metadata;
-    private Map<String, String> user_metadata;
-
 }

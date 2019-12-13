@@ -11,7 +11,9 @@ import com.google.cloud.storage.StorageOptions;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 
 public class GCPWrapper {
 
@@ -31,14 +33,19 @@ public class GCPWrapper {
             prefix = null;
         }
 
+        final String drsBaseUrlWithTrailingSlash = getServerUrl();
+
         GcsClient gcpHttp = createGcsClient(bucketName);
-        DosClient dosClient = createDosClient();
+        DosClient dosClient = createDosClient(drsBaseUrlWithTrailingSlash);
         IdGenerator idGenerator = new UseNameAsId();
+
 
         gcpHttp.getDataObjects(prefix)
                 .map(drsObject -> {
                     String id = idGenerator.generateId(drsObject);
-                    return drsObject.toBuilder().id(id).build();
+                    // I think its drs://<actual-host-name>/<id> which gets turned into http(s)://<actual-host-name>/api/ga4gh/drs/v1/<id>
+                    String self_uri = "drs://"+getHostAndPort(drsBaseUrlWithTrailingSlash)+"/"+id;
+                    return drsObject.toBuilder().id(id).self_uri(self_uri).build();
                 })
                 .forEach(dosClient::postDataObject);
 
@@ -47,10 +54,24 @@ public class GCPWrapper {
         System.out.println("Done.");
     }
 
+    private static String getHostAndPort(String url){
+        try {
+            URL u = new URL(url);
+            if (u.getPort() > -1) {
+                return String.format("%s:%d", u.getHost(), u.getPort());
+            } else {
+                return u.getHost();
+            }
+        }catch(MalformedURLException mue){
+            throw new RuntimeException(mue);
+        }
+    }
+
     private static GcsClient createGcsClient(String bucketName) throws IOException {
         StorageOptions storageOptions = StorageOptions.newBuilder()
 //                .setCredentials(GoogleCredentials.getApplicationDefault())
-                .setCredentials(UserCredentials.fromStream(new FileInputStream(requiredEnv("GOOGLE_APPLICATION_CREDENTIALS"))))
+
+                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(requiredEnv("GOOGLE_APPLICATION_CREDENTIALS"))))
                 .build();
 
         String billingProjectId = optionalEnv("GCS_BILLING_PROJECT_ID");
@@ -58,16 +79,11 @@ public class GCPWrapper {
         return new GcsClient(bucketName, storageOptions, billingProjectId);
     }
 
-    private static DosClient createDosClient() {
-        String serverUrl = requiredEnv("DOS_SERVER_URL");
-        if (!serverUrl.endsWith("/")) {
-            serverUrl += "/";
-        }
-
+    private static DosClient createDosClient(String serverUrl) {
         return new DosClient(
                 URI.create(serverUrl),
-                requiredEnv("DOS_SERVER_USERNAME"),
-                requiredEnv("DOS_SERVER_PASSWORD"));
+                requiredEnv("DRS_SERVER_USERNAME"),
+                requiredEnv("DRS_SERVER_PASSWORD"));
     }
 
     private static String requiredEnv(String name) {
@@ -77,6 +93,14 @@ public class GCPWrapper {
             System.exit(1);
         }
         return value;
+    }
+
+    private static String getServerUrl(){
+        String serverUrl = requiredEnv("DRS_SERVER_URL");
+        if (!serverUrl.endsWith("/")) {
+            serverUrl += "/";
+        }
+        return serverUrl;
     }
 
     private static String optionalEnv(String name) {

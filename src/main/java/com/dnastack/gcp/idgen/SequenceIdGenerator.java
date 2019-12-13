@@ -1,6 +1,6 @@
 package com.dnastack.gcp.idgen;
 
-import com.dnastack.gcp.model.Ga4ghDataObject;
+import com.dnastack.gcp.model.DrsObject;
 
 public class SequenceIdGenerator implements IdGenerator {
     private long nextId;
@@ -10,7 +10,7 @@ public class SequenceIdGenerator implements IdGenerator {
     }
 
     @Override
-    public String generateId(Ga4ghDataObject object) {
+    public String generateId(DrsObject object) {
         String id = String.valueOf(nextId);
         nextId++;
         return id;

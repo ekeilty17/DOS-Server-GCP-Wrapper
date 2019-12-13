@@ -1,7 +1,7 @@
 package com.dnastack.gcp.idgen;
 
-import com.dnastack.gcp.model.Ga4ghDataObject;
+import com.dnastack.gcp.model.DrsObject;
 
 public interface IdGenerator {
-    public String generateId(Ga4ghDataObject object);
+    public String generateId(DrsObject object);
 }
