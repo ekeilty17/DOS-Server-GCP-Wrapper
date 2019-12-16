@@ -1,6 +1,6 @@
-package com.dnastack.gcp.client;
+package com.dnastack.drsclient.client;
 
-import com.dnastack.gcp.model.*;
+import com.dnastack.drsclient.model.*;
 import com.google.api.client.util.DateTime;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
@@ -22,7 +22,7 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
 
-public class GcsClient {
+public class GcsClient implements ObjectLister{
 
     @Getter private String bucketName;
     private Storage storage;
@@ -30,12 +30,17 @@ public class GcsClient {
     private String region;
 
     public GcsClient(String bucketName, StorageOptions storageOptions, String billingProjectId) {
+
         this.bucketName = requireNonNull(bucketName);
+        if(this.bucketName.startsWith("gs://")){
+            this.bucketName = this.bucketName.substring("gs://".length());
+        }
         this.storage = storageOptions.getService();
         this.billingProjectId = billingProjectId;
         this.region = System.getenv("DRS_REGION");
     }
 
+    @Override
     public Stream<DrsObject> getDataObjects(String prefix) throws IOException {
         try {
             List<BlobListOption> blobListOptions = new ArrayList<>();
@@ -75,16 +80,7 @@ public class GcsClient {
         }
     }
 
-    private String translateMimeType(Blob blob) {
-        String originalMimeType = blob.getContentType();
-        if ("text/x-vcard".equals(originalMimeType)) {
-            return "application/x-ga4gh-vcf";
-        } else if ("text/vcard".equals(originalMimeType)) {
-            return "application/x-ga4gh-vcf";
-        } else {
-            return originalMimeType;
-        }
-    }
+
 
     private DrsObject toGa4ghObject(String prefix, Blob blob) {
         String id = null;
@@ -98,7 +94,7 @@ public class GcsClient {
         Instant created = Instant.ofEpochSecond(blob.getCreateTime());
         Instant updated = Instant.ofEpochSecond(blob.getUpdateTime());
         String version = "1";
-        String mimeType = translateMimeType(blob);
+        String mimeType = translateMimeType(blob.getContentType());
         List<DrsChecksum> checksums = getChecksums(blob);
         List<DrsUrl> urls = getUrls(blob);
         String description = blob.getBlobId().getName();

@@ -1,4 +1,4 @@
-package com.dnastack.gcp.model;
+package com.dnastack.drsclient.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

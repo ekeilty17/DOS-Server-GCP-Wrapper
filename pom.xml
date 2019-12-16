@@ -8,7 +8,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-    <name>GCP DOS Loader</name>
+    <name>DRS Loader</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,6 +55,25 @@
 			<artifactId>google-cloud-storage</artifactId>
 			<version>1.66.0</version>
 		</dependency>
+
+		<!-- Azure client libraries -->
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure</artifactId>
+			<version>1.29.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-storage-blob</artifactId>
+			<version>12.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.rest.v2</groupId>
+			<artifactId>client-runtime</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
@@ -73,7 +92,7 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.6.0</version>
 				<configuration>
-					<mainClass>com.dnastack.gcp.GCPWrapper</mainClass>
+					<mainClass>com.dnastack.drsclient.DrsInsert</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>

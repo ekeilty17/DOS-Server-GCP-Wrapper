@@ -1,6 +1,6 @@
-package com.dnastack.gcp.client;
+package com.dnastack.drsclient.client;
 
-import com.dnastack.gcp.model.DrsObject;
+import com.dnastack.drsclient.model.DrsObject;
 import com.google.api.client.util.DateTime;
 import com.google.gson.*;
 import org.apache.commons.codec.binary.Base64;
@@ -18,15 +18,13 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public class DosClient {
+public class DrsClient {
 
     private final URI baseUrl;
     private final String authHeader;
@@ -36,7 +34,7 @@ public class DosClient {
 
     private List<DrsObject> bufferedDataObjects = new ArrayList<>();
 
-    public DosClient(URI baseUrl, String username, String password) {
+    public DrsClient(URI baseUrl, String username, String password) {
         this.baseUrl = requireNonNull(baseUrl);
 
         String auth = username + ":" + password;
@@ -65,6 +63,8 @@ public class DosClient {
     public void flush() {
         try {
             String postBody = gson.toJson(bufferedDataObjects);
+            System.out.println(postBody);
+            System.exit(1);
             HttpPost request =
                     new HttpPost(baseUrl.resolve("ga4gh/drs/v1/objects"));
             request.setEntity(new StringEntity(postBody));

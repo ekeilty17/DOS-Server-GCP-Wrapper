@@ -1,6 +1,6 @@
-package com.dnastack.gcp.idgen;
+package com.dnastack.drsclient.idgen;
 
-import com.dnastack.gcp.model.DrsObject;
+import com.dnastack.drsclient.model.DrsObject;
 
 public class SequenceIdGenerator implements IdGenerator {
     private long nextId;

@@ -1,7 +1,5 @@
-package com.dnastack.gcp;
+package com.dnastack.drsclient;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.junit.Test;
 
 public class GCPWrapperTest {

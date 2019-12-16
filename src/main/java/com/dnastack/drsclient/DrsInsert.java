@@ -1,12 +1,12 @@
-package com.dnastack.gcp;
+package com.dnastack.drsclient;
 
-import com.dnastack.gcp.client.DosClient;
-import com.dnastack.gcp.client.GcsClient;
-import com.dnastack.gcp.idgen.IdGenerator;
-import com.dnastack.gcp.idgen.UseNameAsId;
+import com.dnastack.drsclient.client.AzureBlobLister;
+import com.dnastack.drsclient.client.DrsClient;
+import com.dnastack.drsclient.client.GcsClient;
+import com.dnastack.drsclient.client.ObjectLister;
+import com.dnastack.drsclient.idgen.IdGenerator;
+import com.dnastack.drsclient.idgen.UseNameAsId;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.UserCredentials;
-import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.StorageOptions;
 
 import java.io.FileInputStream;
@@ -15,13 +15,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-public class GCPWrapper {
+public class DrsInsert {
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1 || args.length > 2) {
             System.err.println("Incorrect number of command line parameters. Got " + args.length + "; expected 1 or 2.");
             System.err.println();
-            System.err.println("Usage: GCPWrapper <bucket-name> [prefix]");
+            System.err.println("Usage: DrsInsert <bucket-name or container name> [prefix]");
             System.exit(1);
         }
 
@@ -35,12 +35,20 @@ public class GCPWrapper {
 
         final String drsBaseUrlWithTrailingSlash = getServerUrl();
 
-        GcsClient gcpHttp = createGcsClient(bucketName);
-        DosClient dosClient = createDosClient(drsBaseUrlWithTrailingSlash);
+        ObjectLister objectLister;
+        if(bucketName.startsWith("gs://")){
+            objectLister = createGcsClient(bucketName);
+        }else if(bucketName.matches("https://.*.blob.core.windows.net/.*")){
+            objectLister = createAzureClient(bucketName);
+        }else{
+            throw new IllegalArgumentException("Unrecognized bucket/container type.  Expected format is gs://<bucketname> or https://<storageaccount>.blob.core.windows.net/<container>\n");
+        }
+
+        DrsClient dosClient = createDosClient(drsBaseUrlWithTrailingSlash);
         IdGenerator idGenerator = new UseNameAsId();
 
 
-        gcpHttp.getDataObjects(prefix)
+        objectLister.getDataObjects(prefix)
                 .map(drsObject -> {
                     String id = idGenerator.generateId(drsObject);
                     // I think its drs://<actual-host-name>/<id> which gets turned into http(s)://<actual-host-name>/api/ga4gh/drs/v1/<id>
@@ -66,6 +74,9 @@ public class GCPWrapper {
             throw new RuntimeException(mue);
         }
     }
+    private static AzureBlobLister createAzureClient(String containerURL) throws IOException{
+        return new AzureBlobLister(requiredEnv("SUBSCRIPTION_ID"), requiredEnv("STORAGE_ACCOUNT"), containerURL, requiredEnv("AZ_CONNECTION_STRING"));
+    }
 
     private static GcsClient createGcsClient(String bucketName) throws IOException {
         StorageOptions storageOptions = StorageOptions.newBuilder()
@@ -79,8 +90,8 @@ public class GCPWrapper {
         return new GcsClient(bucketName, storageOptions, billingProjectId);
     }
 
-    private static DosClient createDosClient(String serverUrl) {
-        return new DosClient(
+    private static DrsClient createDosClient(String serverUrl) {
+        return new DrsClient(
                 URI.create(serverUrl),
                 requiredEnv("DRS_SERVER_USERNAME"),
                 requiredEnv("DRS_SERVER_PASSWORD"));

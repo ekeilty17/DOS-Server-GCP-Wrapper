@@ -3,36 +3,44 @@ Uploads information about files in a public [GCP Bucket](https://console.cloud.g
 
 ## Usage
 
-First have a dos server running on http://localhost:8086/. These instructions are tested against the
-[DNAstack DOS server](https://github.com/DNAstack/GA4GH-DOS-Server) created under Google Summer of Code.
+First have a DRS server running on http://localhost:8086/. These instructions are tested against the
+[DNAstack DRS server](https://github.com/DNAstack/drs-server).
 
-Run the GCS data loader:
+Run the the data loader for the appropriate bucket or container:
+#### Azure Blob Storage
 ```
+export SUBSCRIPTION_ID=<subscription id>
+export STORAGE_ACCOUNT_NAME=<storage account name>
+export CONTAINER_NAME=<container_name>
+
+DRS_SERVER_URL="http://localhost:8086" \
+DRS_SERVER_USERNAME="" \
+DRS_SERVER_PASSWORD="" \
+STORAGE_ACCOUNT=`az storage account list --query "[?name=='${STORAGE_ACCOUNT_NAME}'].{id:id}" --output tsv` \
+AZ_CONNECTION_STRING=`az storage account show-connection-string --name ${STORAGE_ACCOUNT_NAME} -o tsv` \
+mvn exec:java -Dexec.args="https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${CONTAINER_NAME}"
+```
+
+#### Google Cloud Storage
+```
+GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \
 DOS_SERVER_URL=http://localhost:8086 \
 DOS_SERVER_USERNAME=dosadmin \
 DOS_SERVER_PASSWORD=dosadmin \
-mvn exec:java
+mvn exec:java -Dexec.args=gs://<bucket name>
 ```
-
-By default, this imports the GCS public data objects from the 1000 Genomes project.
-To see if it worked, execute:
-```
-$ curl http://localhost:8086/dataobjects
-$ curl http://localhost:8086/databundles
-```
-This should display the objects that have been added to the database.
 
 ### Example: Load 1000 Genomes Data
 ```
 DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME=dosadmin \
-DOS_SERVER_PASSWORD=dosadmin \
-mvn exec:java -Dexec.args='genomics-public-data 1000-genomes/bam'
+DOS_SERVER_USERNAME= \
+DOS_SERVER_PASSWORD= \
+mvn exec:java -Dexec.args='gs://genomics-public-data 1000-genomes/bam'
 
 DOS_SERVER_URL=http://localhost:8086 \
 DOS_SERVER_USERNAME=dosadmin \
 DOS_SERVER_PASSWORD=dosadmin \
-mvn exec:java -Dexec.args='genomics-public-data 1000-genomes/vcf'
+mvn exec:java -Dexec.args='gs://genomics-public-data 1000-genomes/vcf'
 ```
 
 ### Example: Load Reprocessed PGP Canada Data
