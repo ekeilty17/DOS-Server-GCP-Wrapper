@@ -63,8 +63,6 @@ public class DrsClient {
     public void flush() {
         try {
             String postBody = gson.toJson(bufferedDataObjects);
-            System.out.println(postBody);
-            System.exit(1);
             HttpPost request =
                     new HttpPost(baseUrl.resolve("ga4gh/drs/v1/objects"));
             request.setEntity(new StringEntity(postBody));
