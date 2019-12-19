@@ -76,6 +76,6 @@ public class DrsObject {
     /**
      * A list of strings that can be used to find this Data Object. These aliases can be used to represent the Data Object's location in a directory (e.g. "bucket/folder/file.name") to make Data Objects more discoverable.
      */
-    private List<String> aliases = new ArrayList<>();
+    private List<String> aliases;
 
 }

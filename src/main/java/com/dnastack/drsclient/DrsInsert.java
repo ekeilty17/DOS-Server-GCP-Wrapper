@@ -93,11 +93,11 @@ public class DrsInsert {
     private static DrsClient createDosClient(String serverUrl) {
         return new DrsClient(
                 URI.create(serverUrl),
-                requiredEnv("DRS_SERVER_USERNAME"),
-                requiredEnv("DRS_SERVER_PASSWORD"));
+                optionalEnv("DRS_SERVER_USERNAME"),
+                optionalEnv("DRS_SERVER_PASSWORD"));
     }
 
-    private static String requiredEnv(String name) {
+    public static String requiredEnv(String name) {
         String value = System.getenv(name);
         if (value == null) {
             System.err.println("Missing required environment variable " + name);
@@ -114,7 +114,12 @@ public class DrsInsert {
         return serverUrl;
     }
 
-    private static String optionalEnv(String name) {
+    public static String optionalEnv(String name) {
         return System.getenv(name);
+    }
+
+    public static String optionalEnv(String name, String defaultValue){
+        String v = System.getenv(name);
+        return (v==null) ? defaultValue : v;
     }
 }

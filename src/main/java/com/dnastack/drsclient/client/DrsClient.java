@@ -37,10 +37,13 @@ public class DrsClient {
     public DrsClient(URI baseUrl, String username, String password) {
         this.baseUrl = requireNonNull(baseUrl);
 
-        String auth = username + ":" + password;
-        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-        authHeader = "Basic " + new String(encodedAuth, StandardCharsets.ISO_8859_1);
-
+        if(username != null && password != null) {
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+            authHeader = "Basic " + new String(encodedAuth, StandardCharsets.ISO_8859_1);
+        }else{
+            authHeader = null;
+        }
         httpClient = HttpClientBuilder.create().build();
 
 
@@ -67,7 +70,9 @@ public class DrsClient {
                     new HttpPost(baseUrl.resolve("ga4gh/drs/v1/objects"));
             request.setEntity(new StringEntity(postBody));
             request.setHeader("Content-type", "application/json");
-            request.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+            if(authHeader != null) {
+                request.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+            }
 
             HttpResponse httpResponse = httpClient.execute(request);
             String responseBody = EntityUtils.toString(httpResponse.getEntity());

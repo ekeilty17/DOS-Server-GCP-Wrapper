@@ -25,9 +25,29 @@ mvn exec:java -Dexec.args="https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net
 ```
 GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \
 DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME=dosadmin \
-DOS_SERVER_PASSWORD=dosadmin \
+DOS_SERVER_USERNAME="" \
+DOS_SERVER_PASSWORD="" \
 mvn exec:java -Dexec.args=gs://<bucket name>
+```
+
+## Tests
+Ensure all the environment variables above are set, and then run ```mvn test```
+e.g.:
+```
+export SUBSCRIPTION_ID=<subscription id>
+export STORAGE_ACCOUNT_NAME=<storage account name>
+export CONTAINER_NAME=<container_name>
+
+DRS_SERVER_URL="http://localhost:8086" \
+DRS_SERVER_USERNAME="" \
+DRS_SERVER_PASSWORD="" \
+STORAGE_ACCOUNT=`az storage account list --query "[?name=='${STORAGE_ACCOUNT_NAME}'].{id:id}" --output tsv` \
+AZ_CONNECTION_STRING=`az storage account show-connection-string --name ${STORAGE_ACCOUNT_NAME} -o tsv` \
+GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \
+DOS_SERVER_URL=http://localhost:8086 \
+DOS_SERVER_USERNAME="" \
+DOS_SERVER_PASSWORD="" \
+mvn test
 ```
 
 ### Example: Load 1000 Genomes Data

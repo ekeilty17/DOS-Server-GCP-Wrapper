@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -98,7 +99,7 @@ public class GcsClient implements ObjectLister{
         List<DrsChecksum> checksums = getChecksums(blob);
         List<DrsUrl> urls = getUrls(blob);
         String description = blob.getBlobId().getName();
-        List<String> aliases = new ArrayList<>();
+        List<String> aliases = Arrays.asList(String.format("gs://%s/%s", blob.getBucket(), blob.getName()));
         List<DrsAccessMethod> accessMethods = ImmutableList.of(DrsAccessMethod.builder()
                                                                               .type(DrsAccessMethod.AccessType.gs)
                                                                               .region(region)
