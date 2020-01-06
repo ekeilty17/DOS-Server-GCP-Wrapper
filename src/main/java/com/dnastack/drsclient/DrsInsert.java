@@ -1,9 +1,9 @@
 package com.dnastack.drsclient;
 
-import com.dnastack.drsclient.client.AzureBlobLister;
-import com.dnastack.drsclient.client.DrsClient;
-import com.dnastack.drsclient.client.GcsClient;
-import com.dnastack.drsclient.client.ObjectLister;
+import com.dnastack.drsclient.client.*;
+import com.dnastack.drsclient.client.config.AzureBlobStorageConfig;
+import com.dnastack.drsclient.client.config.DrsServerConfig;
+import com.dnastack.drsclient.client.config.GcsConfig;
 import com.dnastack.drsclient.idgen.IdGenerator;
 import com.dnastack.drsclient.idgen.UseNameAsId;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -75,51 +75,37 @@ public class DrsInsert {
         }
     }
     private static AzureBlobLister createAzureClient(String containerURL) throws IOException{
-        return new AzureBlobLister(requiredEnv("SUBSCRIPTION_ID"), requiredEnv("STORAGE_ACCOUNT"), containerURL, requiredEnv("AZ_CONNECTION_STRING"));
+        return new AzureBlobLister(AzureBlobStorageConfig.getSubscriptionId(), AzureBlobStorageConfig.getStorageAccount(), containerURL, AzureBlobStorageConfig
+                .getAzConnectionString());
     }
 
-    private static GcsClient createGcsClient(String bucketName) throws IOException {
+    private static GcsObjectLister createGcsClient(String bucketName) throws IOException {
         StorageOptions storageOptions = StorageOptions.newBuilder()
 //                .setCredentials(GoogleCredentials.getApplicationDefault())
 
-                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(requiredEnv("GOOGLE_APPLICATION_CREDENTIALS"))))
+                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(GcsConfig.getGoogleApplicationCredentials())))
                 .build();
 
-        String billingProjectId = optionalEnv("GCS_BILLING_PROJECT_ID");
+        String billingProjectId = GcsConfig.getBillingProjectId();
 
-        return new GcsClient(bucketName, storageOptions, billingProjectId);
+        return new GcsObjectLister(bucketName, storageOptions, billingProjectId);
     }
 
     private static DrsClient createDosClient(String serverUrl) {
         return new DrsClient(
                 URI.create(serverUrl),
-                optionalEnv("DRS_SERVER_USERNAME"),
-                optionalEnv("DRS_SERVER_PASSWORD"));
+                DrsServerConfig.getDrsUsername(),
+                DrsServerConfig.getDrsPassword());
     }
 
-    public static String requiredEnv(String name) {
-        String value = System.getenv(name);
-        if (value == null) {
-            System.err.println("Missing required environment variable " + name);
-            System.exit(1);
-        }
-        return value;
-    }
+
 
     private static String getServerUrl(){
-        String serverUrl = requiredEnv("DRS_SERVER_URL");
+        String serverUrl = DrsServerConfig.getDrsServerUrl();
         if (!serverUrl.endsWith("/")) {
             serverUrl += "/";
         }
         return serverUrl;
     }
 
-    public static String optionalEnv(String name) {
-        return System.getenv(name);
-    }
-
-    public static String optionalEnv(String name, String defaultValue){
-        String v = System.getenv(name);
-        return (v==null) ? defaultValue : v;
-    }
 }

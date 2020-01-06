@@ -1,5 +1,6 @@
 package com.dnastack.drsclient;
 
+import com.dnastack.drsclient.client.config.DrsServerConfig;
 import com.dnastack.drsclient.model.DrsObject;
 import com.dnastack.drsclient.model.DrsUrl;
 import com.google.api.client.util.Lists;
@@ -10,8 +11,8 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.reflect.TypeToken;
-import jdk.internal.joptsimple.internal.Strings;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -23,27 +24,23 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.dnastack.drsclient.DrsInsert.optionalEnv;
-import static com.dnastack.drsclient.DrsInsert.requiredEnv;
 
 public class GCPTest {
 
-    private static final String DRS_SERVER_URL = requiredEnv("DRS_SERVER_URL");
-    private static final String DRS_USERNAME = optionalEnv("DRS_SERVER_USERNAME");
-    private static final String DRS_PASSWORD = optionalEnv("DRS_SERVER_PASSWORD");
+    private static final String DRS_SERVER_URL = DrsServerConfig.getDrsServerUrl();
+    private static final String DRS_USERNAME = DrsServerConfig.getDrsUsername();
+    private static final String DRS_PASSWORD = DrsServerConfig.getDrsPassword();
     private static final URI DRS_BASE_URI;
     private static final String DRS_API_BASE="/ga4gh/drs/v1";
     private static final int NUM_TEST_FILES=5;
     private static final int PAGE_SIZE=NUM_TEST_FILES*10; //should be large enough that all files within the TEST_BUCKET are returned.
-    private static final String TEST_BUCKET = optionalEnv("GCS_TEST_BUCKET", "drs-client-test-bucket");
+    private static final String TEST_BUCKET = Environment.getOptionalEnv("GCS_TEST_BUCKET", "drs-client-test-bucket");
     private static Pattern GCS_URL_PATTERN = Pattern.compile("https://.*google.*/b/(.*)/o/.*");
     private static Pattern GS_URI_PATTERN = Pattern.compile("gs://([a-zA-Z_0-9\\-]+)/(.*)");
 
@@ -60,7 +57,7 @@ public class GCPTest {
         try {
             DRS_BASE_URI = new URI(DRS_SERVER_URL);
             StorageOptions storageOptions = StorageOptions.newBuilder()
-                                                          .setCredentials(GoogleCredentials.fromStream(new FileInputStream(requiredEnv(
+                                                          .setCredentials(GoogleCredentials.fromStream(new FileInputStream(Environment.getRequiredEnv(
                                                                   "GOOGLE_APPLICATION_CREDENTIALS"))))
                                                           .build();
             storage = storageOptions.getService();
@@ -201,10 +198,10 @@ public class GCPTest {
 
         if(!reportedUris.containsAll(blobGsUris)){
             reportedUris.removeAll(blobGsUris);
-            throw new RuntimeException("DRS records with URIs " + Strings.join(reportedUris, ",") + " found with no corresponding files in cloud storage.");
+            throw new RuntimeException("DRS records with URIs " + StringUtils.join(reportedUris, ",") + " found with no corresponding files in cloud storage.");
         }else if(!blobGsUris.containsAll(reportedUris)){
             blobGsUris.removeAll(reportedUris);
-            throw new RuntimeException("Files with URIs " + Strings.join(blobGsUris, ",") + " found with no corresponding record in DRS.");
+            throw new RuntimeException("Files with URIs " + StringUtils.join(blobGsUris, ",") + " found with no corresponding record in DRS.");
         }
     }
 

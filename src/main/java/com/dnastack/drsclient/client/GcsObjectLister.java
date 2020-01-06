@@ -23,14 +23,14 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
 
-public class GcsClient implements ObjectLister{
+public class GcsObjectLister implements ObjectLister{
 
     @Getter private String bucketName;
     private Storage storage;
     private String billingProjectId;
     private String region;
 
-    public GcsClient(String bucketName, StorageOptions storageOptions, String billingProjectId) {
+    public GcsObjectLister(String bucketName, StorageOptions storageOptions, String billingProjectId) {
 
         this.bucketName = requireNonNull(bucketName);
         if(this.bucketName.startsWith("gs://")){

@@ -79,6 +79,7 @@ public class AzureBlobLister implements ObjectLister {
         List<DrsUrl> urls = getUrls(blobItem);
         String description = blobItem.getName();
         List<String> aliases = new ArrayList<>();
+
         String url = containerClient.getBlobClient(blobItem.getName()).getBlobUrl();
         List<DrsAccessMethod> accessMethods = ImmutableList.of(DrsAccessMethod.builder()
                                                                               .type(DrsAccessMethod.AccessType.https)
@@ -86,7 +87,6 @@ public class AzureBlobLister implements ObjectLister {
                                                                               .access_url(DrsAccessUrl.builder()
                                                                                                       .url(url)
                                                                                                       .build())
-
                                                                               .build());
         DrsObject drsObject = new DrsObject(id,
                              name,

@@ -9,24 +9,24 @@ First have a DRS server running on http://localhost:8086/. These instructions ar
 Run the the data loader for the appropriate bucket or container:
 #### Azure Blob Storage
 ```
-export SUBSCRIPTION_ID=<subscription id>
+export AZURE_SUBSCRIPTION_ID=<subscription id>
 export STORAGE_ACCOUNT_NAME=<storage account name>
 export CONTAINER_NAME=<container_name>
 
 DRS_SERVER_URL="http://localhost:8086" \
 DRS_SERVER_USERNAME="" \
 DRS_SERVER_PASSWORD="" \
-STORAGE_ACCOUNT=`az storage account list --query "[?name=='${STORAGE_ACCOUNT_NAME}'].{id:id}" --output tsv` \
-AZ_CONNECTION_STRING=`az storage account show-connection-string --name ${STORAGE_ACCOUNT_NAME} -o tsv` \
+AZURE_STORAGE_ACCOUNT=`az storage account list --query "[?name=='${STORAGE_ACCOUNT_NAME}'].{id:id}" --output tsv` \
+AZURE_CONNECTION_STRING=`az storage account show-connection-string --name ${STORAGE_ACCOUNT_NAME} -o tsv` \
 mvn exec:java -Dexec.args="https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${CONTAINER_NAME}"
 ```
-
+*Note that the AZURE_STORAGE_ACCOUNT environment variable should be set to the resource id of the storage account, NOT the storage account name.  The above example shows how to get this information using the az CLI.
 #### Google Cloud Storage
 ```
+DRS_SERVER_URL="http://localhost:8086" \
+DRS_SERVER_USERNAME="" \
+DRS_SERVER_PASSWORD="" \
 GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \
-DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME="" \
-DOS_SERVER_PASSWORD="" \
 mvn exec:java -Dexec.args=gs://<bucket name>
 ```
 
@@ -34,47 +34,29 @@ mvn exec:java -Dexec.args=gs://<bucket name>
 Ensure all the environment variables above are set, and then run ```mvn test```
 e.g.:
 ```
-export SUBSCRIPTION_ID=<subscription id>
+export AZURE_SUBSCRIPTION_ID=<subscription id>
 export STORAGE_ACCOUNT_NAME=<storage account name>
 export CONTAINER_NAME=<container_name>
 
+GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \ 
 DRS_SERVER_URL="http://localhost:8086" \
 DRS_SERVER_USERNAME="" \
 DRS_SERVER_PASSWORD="" \
-STORAGE_ACCOUNT=`az storage account list --query "[?name=='${STORAGE_ACCOUNT_NAME}'].{id:id}" --output tsv` \
-AZ_CONNECTION_STRING=`az storage account show-connection-string --name ${STORAGE_ACCOUNT_NAME} -o tsv` \
-GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \
-DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME="" \
-DOS_SERVER_PASSWORD="" \
+AZURE_STORAGE_ACCOUNT=`az storage account list --query "[?name=='${STORAGE_ACCOUNT_NAME}'].{id:id}" --output tsv` \
+AZURE_CONNECTION_STRING=`az storage account show-connection-string --name ${STORAGE_ACCOUNT_NAME} -o tsv` \
+AZURE_TEST_CONTAINER_URL="https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${CONTAINER_NAME}" \
 mvn test
 ```
 
 ### Example: Load 1000 Genomes Data
 ```
-DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME= \
-DOS_SERVER_PASSWORD= \
+DRS_SERVER_URL=http://localhost:8086 \
+DRS_SERVER_USERNAME="" \
+DRS_SERVER_PASSWORD="" \
 mvn exec:java -Dexec.args='gs://genomics-public-data 1000-genomes/bam'
 
-DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME=dosadmin \
-DOS_SERVER_PASSWORD=dosadmin \
+DRS_SERVER_URL=http://localhost:8086 \
+DRS_SERVER_USERNAME="" \
+DRS_SERVER_PASSWORD="" \
 mvn exec:java -Dexec.args='gs://genomics-public-data 1000-genomes/vcf'
-```
-
-### Example: Load Reprocessed PGP Canada Data
-```
-DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME=dosadmin \
-DOS_SERVER_PASSWORD=dosadmin \
-mvn exec:java -Dexec.args='pgc-data'
-```
-
-### Example: Load MSSNG Data
-```
-DOS_SERVER_URL=http://localhost:8086 \
-DOS_SERVER_USERNAME=dosadmin \
-DOS_SERVER_PASSWORD=dosadmin \
-mvn exec:java -Dexec.args='mssng-share released/genomes/ILMN/VCF'
 ```
