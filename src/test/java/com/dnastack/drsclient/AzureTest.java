@@ -6,8 +6,8 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.ListBlobsOptions;
 import com.dnastack.drsclient.client.config.AzureBlobStorageConfig;
 import com.dnastack.drsclient.client.config.DrsServerConfig;
+import com.dnastack.drsclient.model.DrsAccessMethod;
 import com.dnastack.drsclient.model.DrsObject;
-import com.dnastack.drsclient.model.DrsUrl;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +22,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
@@ -152,12 +151,26 @@ public class AzureTest {
     }
 
 
+    private static boolean hasAzureUriInFirstPosition(DrsObject drsObject){
+            DrsAccessMethod dam = drsObject.getAccess_methods().get(0);
+            if(dam.getAccess_url() == null){
+                return false;
+            }
+            String url = dam.getAccess_url().getUrl();
+            return AZURE_URL_PATTERN.matcher(url).matches();
+    }
+
     private static boolean hasPrefix(DrsObject drsObject){
         if(drsObject == null){
             System.err.println("drsObject is null!");
         }
 
-        return getObjectNameFromAzureUri(drsObject.getAccess_methods().get(0).getAccess_url().getUrl()).startsWith(TEST_PREFIX);
+        if(hasAzureUriInFirstPosition(drsObject)) {
+            String azureUri = drsObject.getAccess_methods().get(0).getAccess_url().getUrl();
+            return getObjectNameFromAzureUri(azureUri).startsWith(TEST_PREFIX);
+        }else{
+            return false;
+        }
     }
 
     private static void deleteRecordsWithPrefix(String prefix){
@@ -176,14 +189,6 @@ public class AzureTest {
 
     }
 
-
-    /*
-    private void assertWebUrlFormattedCorrectly(String webUrl){
-        Matcher matcher = AZURE_URL_PATTERN.matcher(webUrl);
-        if(!matcher.matches()){
-            throw new RuntimeException("Got an object with URL "+webUrl+" which doesn't match expected pattern for a file in Azure Blob Storage");
-        }
-    }*/
 
     @Test
     public void testInsertFiles() {
@@ -222,14 +227,6 @@ public class AzureTest {
         Set<String> reportedUris = drsObjects.stream()
                                              .filter(AzureTest::hasPrefix)
                                              .map(drsObject-> {
-                                                 List<DrsUrl> drsUrls = drsObject.getUrls();
-                                                 if(drsUrls == null || drsUrls.isEmpty()){
-                                                     throw new RuntimeException("Expected a non null URL for an inserted DRS Object with id "+drsObject.getId());
-                                                 }
-
-                                                 String webUrl = drsUrls.get(0).getUrl().toString();
-                                                 //assertWebUrlFormattedCorrectly(webUrl);
-
                                                  String blobURL = drsObject.getAccess_methods().get(0).getAccess_url().getUrl();
                                                  if(!blobURLs.contains(blobURL)){
                                                      System.out.println(drsObject);

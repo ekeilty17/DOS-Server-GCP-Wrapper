@@ -64,11 +64,6 @@ public class DrsObject {
     private List<DrsAccessMethod> access_methods;
 
     /**
-     * The list of URLs that can be used to access the Data Object.
-     */
-    private List<DrsUrl> urls = new ArrayList<>();
-
-    /**
      * A human readable description of the contents of the Data Object.
      */
     private String description;

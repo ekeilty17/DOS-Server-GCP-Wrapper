@@ -2,7 +2,6 @@ package com.dnastack.drsclient;
 
 import com.dnastack.drsclient.client.config.DrsServerConfig;
 import com.dnastack.drsclient.model.DrsObject;
-import com.dnastack.drsclient.model.DrsUrl;
 import com.google.api.client.util.Lists;
 import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -124,7 +123,14 @@ public class GCPTest {
 
 
     private static boolean hasPrefix(DrsObject drsObject){
-        return getObjectNameFromGsUri(drsObject.getAliases().get(0)).startsWith(TEST_PREFIX);
+        if(drsObject.getAliases() == null){
+            return false;
+        }
+        String objectName = getObjectNameFromGsUri(drsObject.getAliases().get(0));
+        if(objectName == null){
+            return false;
+        }
+        return objectName.startsWith(TEST_PREFIX);
     }
 
     private static void deleteRecordsWithPrefix(String prefix){
@@ -180,14 +186,6 @@ public class GCPTest {
         Set<String> reportedUris = drsObjects.stream()
                   .filter(GCPTest::hasPrefix)
                   .map(drsObject-> {
-                    List<DrsUrl> drsUrls = drsObject.getUrls();
-                    if(drsUrls == null || drsUrls.isEmpty()){
-                        throw new RuntimeException("Expected a non null URL for an inserted DRS Object with id "+drsObject.getId());
-                    }
-
-                    String webUrl = drsUrls.get(0).getUrl().toString();
-                    assertWebUrlFormattedCorrectly(webUrl);
-
                     String gsUri = drsObject.getAliases().get(0);
                     if(!blobGsUris.contains(gsUri)){
                         System.out.println(drsObject);

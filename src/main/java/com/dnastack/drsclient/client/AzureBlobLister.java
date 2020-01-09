@@ -57,13 +57,6 @@ public class AzureBlobLister implements ObjectLister {
         }
     }
 
-    private List<DrsUrl> getUrls(BlobItem blob) {
-        try {
-           return ImmutableList.of(new DrsUrl(new URI(blob.getName()), null, null, null));
-        }catch(URISyntaxException use){
-            throw new RuntimeException(use);
-        }
-    }
 
     private DrsObject toDrsObject(String prefix, BlobItem blobItem) {
         String id = null;
@@ -76,7 +69,6 @@ public class AzureBlobLister implements ObjectLister {
         String version = "1";
         String mimeType = translateMimeType(blobItem.getProperties().getContentType());
         List<DrsChecksum> checksums = getChecksums(blobItem);
-        List<DrsUrl> urls = getUrls(blobItem);
         String description = blobItem.getName();
         List<String> aliases = new ArrayList<>();
 
@@ -98,7 +90,6 @@ public class AzureBlobLister implements ObjectLister {
                              mimeType,
                              checksums,
                              accessMethods,
-                             urls,
                              description,
                              aliases);
         return drsObject;

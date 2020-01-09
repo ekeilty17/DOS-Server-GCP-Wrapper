@@ -1,7 +1,9 @@
 package com.dnastack.drsclient.client;
 
-import com.dnastack.drsclient.model.*;
-import com.google.api.client.util.DateTime;
+import com.dnastack.drsclient.model.DrsAccessMethod;
+import com.dnastack.drsclient.model.DrsAccessUrl;
+import com.dnastack.drsclient.model.DrsChecksum;
+import com.dnastack.drsclient.model.DrsObject;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
@@ -12,8 +14,6 @@ import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,10 +61,6 @@ public class GcsObjectLister implements ObjectLister{
         }
     }
 
-    private String convertDate(Long dateValue) {
-        return new DateTime(false, dateValue, 0).toStringRfc3339();
-    }
-
     private List<DrsChecksum> getChecksums(Blob blob) {
         if (blob.getMd5() != null) {
             return ImmutableList.of(new DrsChecksum(blob.getMd5(), DrsChecksum.Type.md5));
@@ -72,15 +68,6 @@ public class GcsObjectLister implements ObjectLister{
             return ImmutableList.of();
         }
     }
-
-    private List<DrsUrl> getUrls(Blob blob) {
-        try {
-            return ImmutableList.of(new DrsUrl(new URI(blob.getMediaLink()), null, null, null));
-        }catch(URISyntaxException use){
-            throw new RuntimeException(use);
-        }
-    }
-
 
 
     private DrsObject toGa4ghObject(String prefix, Blob blob) {
@@ -97,7 +84,6 @@ public class GcsObjectLister implements ObjectLister{
         String version = "1";
         String mimeType = translateMimeType(blob.getContentType());
         List<DrsChecksum> checksums = getChecksums(blob);
-        List<DrsUrl> urls = getUrls(blob);
         String description = blob.getBlobId().getName();
         List<String> aliases = Arrays.asList(String.format("gs://%s/%s", blob.getBucket(), blob.getName()));
         List<DrsAccessMethod> accessMethods = ImmutableList.of(DrsAccessMethod.builder()
@@ -118,7 +104,6 @@ public class GcsObjectLister implements ObjectLister{
                 mimeType,
                 checksums,
                 accessMethods,
-                urls,
                 description,
                 aliases);
     }
