@@ -1,4 +1,4 @@
-# DOS GCS Loader 
+# DRS Cloud Storage Loader
 Uploads information about files in a public [GCP Bucket](https://console.cloud.google.com/storage/browser/genomics-public-data/1000-genomes/bam/?_ga=2.252890444.-472133816.1533309090&_gac=1.81252837.1533310626.Cj0KCQjw-o_bBRCOARIsAM5NbIN8kuD7tf7SIZHrCioTk1HgIWCMdntRn5ibl7CTVZqKpFlGDK6O630aAg_FEALw_wcB) into a DOS Server.
 
 ## Usage
@@ -29,6 +29,8 @@ DRS_SERVER_PASSWORD="" \
 GOOGLE_APPLICATION_CREDENTIALS=<path to credentials.json> \
 mvn exec:java -Dexec.args=gs://<bucket name>
 ```
+
+> You may need `GCS_BILLING_PROJECT_ID` to indicate the billing project ID for accessing Requester Pays buckets.
 
 ## Tests
 Ensure all the environment variables above are set, and then run ```mvn test```

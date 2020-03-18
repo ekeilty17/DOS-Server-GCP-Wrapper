@@ -81,8 +81,6 @@ public class DrsInsert {
 
     private static GcsObjectLister createGcsClient(String bucketName) throws IOException {
         StorageOptions storageOptions = StorageOptions.newBuilder()
-//                .setCredentials(GoogleCredentials.getApplicationDefault())
-
                 .setCredentials(GoogleCredentials.fromStream(new FileInputStream(GcsConfig.getGoogleApplicationCredentials())))
                 .build();
 
