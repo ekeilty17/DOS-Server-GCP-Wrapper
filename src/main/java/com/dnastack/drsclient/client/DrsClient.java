@@ -3,6 +3,7 @@ package com.dnastack.drsclient.client;
 import com.dnastack.drsclient.model.DrsObject;
 import com.google.api.client.util.DateTime;
 import com.google.gson.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
+@Slf4j
 public class DrsClient {
 
     private final URI baseUrl;
@@ -66,6 +68,7 @@ public class DrsClient {
     public void flush() {
         try {
             String postBody = gson.toJson(bufferedDataObjects);
+            log.debug(postBody);
             HttpPost request =
                     new HttpPost(baseUrl.resolve("ga4gh/drs/v1/objects"));
             request.setEntity(new StringEntity(postBody));

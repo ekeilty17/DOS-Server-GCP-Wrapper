@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
 public class GcsObjectLister implements ObjectLister{
@@ -85,13 +86,19 @@ public class GcsObjectLister implements ObjectLister{
         String mimeType = translateMimeType(blob.getContentType());
         List<DrsChecksum> checksums = getChecksums(blob);
         String description = blob.getBlobId().getName();
-        List<String> aliases = Arrays.asList(String.format("gs://%s/%s", blob.getBucket(), blob.getName()));
         List<DrsAccessMethod> accessMethods = ImmutableList.of(DrsAccessMethod.builder()
+                                                                              .type(DrsAccessMethod.AccessType.https)
+                                                                              .region(region)
+                                                                              .access_url(DrsAccessUrl.builder()
+                                                                                                      .url(blob.getSelfLink() + "?object")
+                                                                                                      .build())
+                                                                              .build(),
+                                                               DrsAccessMethod.builder()
                                                                               .type(DrsAccessMethod.AccessType.gs)
                                                                               .region(region)
                                                                               .access_url(DrsAccessUrl.builder()
-                                                                                                      .url(blob.getSelfLink())
-                                                                                                      .build())
+                                                                                      .url(String.format("gs://%s/%s", blob.getBucket(), blob.getName()))
+                                                                                      .build())
                                                                               .build());
         return new DrsObject(
                 id,
@@ -105,6 +112,6 @@ public class GcsObjectLister implements ObjectLister{
                 checksums,
                 accessMethods,
                 description,
-                aliases);
+                emptyList());
     }
 }
